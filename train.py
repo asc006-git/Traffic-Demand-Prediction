@@ -53,3 +53,19 @@ for c in cat_cols:
 
 print("Data preprocessing complete.")
 print(f"Train: {train.shape}, Test: {test.shape}")
+
+y = np.log1p(train['demand'].values)
+features = num_cols + cat_cols
+X_train, X_test = train[features], test[features]
+cat_indices = [i for i, c in enumerate(features) if c in cat_cols]
+
+model = CatBoostRegressor(
+    iterations=1000, learning_rate=0.1, depth=6,
+    cat_features=cat_indices, random_seed=42,
+    verbose=100, thread_count=-1
+)
+model.fit(X_train, y)
+
+preds = np.clip(np.expm1(model.predict(X_test)), 0, 1)
+pd.DataFrame({'Index': test['Index'], 'demand': preds}).to_csv('submission.csv', index=False)
+print("Submission saved.")
