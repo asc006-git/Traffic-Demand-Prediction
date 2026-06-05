@@ -1,0 +1,41 @@
+import pandas as pd
+import numpy as np
+
+train = pd.read_csv('dataset/train.csv')
+test = pd.read_csv('dataset/test.csv')
+
+print('=== TRAIN ===')
+print(f'Shape: {train.shape}')
+print(f'Columns: {list(train.columns)}')
+print(f'Dtypes:')
+print(train.dtypes)
+print(f'Missing:')
+print(train.isnull().sum())
+print(f'Head:')
+print(train.head(3).to_string())
+print(f'Describe:')
+print(train.describe(include='all').to_string())
+print(f'Unique counts:')
+for c in train.columns:
+    print(f'{c}: {train[c].nunique()}')
+
+print()
+print('=== TEST ===')
+print(f'Shape: {test.shape}')
+print(f'Columns: {list(test.columns)}')
+print(f'Missing:')
+print(test.isnull().sum())
+print(f'Head:')
+print(test.head(3).to_string())
+
+print()
+print('Target demand stats:')
+print(train['demand'].describe())
+skew_val = train['demand'].skew()
+kurt_val = train['demand'].kurtosis()
+print(f'Skew: {skew_val:.4f}')
+print(f'Kurtosis: {kurt_val:.4f}')
+zero_cnt = (train['demand'] == 0).sum()
+neg_cnt = (train['demand'] < 0).sum()
+print(f'Zero count: {zero_cnt}')
+print(f'Negative count: {neg_cnt}')
