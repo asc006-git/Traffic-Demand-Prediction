@@ -59,13 +59,23 @@ features = num_cols + cat_cols
 X_train, X_test = train[features], test[features]
 cat_indices = [i for i, c in enumerate(features) if c in cat_cols]
 
-model = CatBoostRegressor(
-    iterations=1000, learning_rate=0.1, depth=6,
-    cat_features=cat_indices, random_seed=42,
-    verbose=100, thread_count=-1
-)
-model.fit(X_train, y)
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+models, scores = [], []
 
-preds = np.clip(np.expm1(model.predict(X_test)), 0, 1)
+for fold, (tr, va) in enumerate(kf.split(X_train)):
+    m = CatBoostRegressor(
+        iterations=1000, learning_rate=0.1, depth=6,
+        cat_features=cat_indices, random_seed=42 + fold,
+        verbose=0, early_stopping_rounds=50, thread_count=-1
+    )
+    m.fit(X_train.iloc[tr], y[tr], eval_set=(X_train.iloc[va], y[va]), use_best_model=True)
+    models.append(m)
+    r2 = r2_score(np.expm1(y[va]), np.expm1(m.predict(X_train.iloc[va])))
+    scores.append(r2)
+    print(f'Fold {fold+1} R2: {r2:.6f}')
+
+print(f'CV mean R2: {np.mean(scores):.6f} +/- {np.std(scores):.6f}')
+
+preds = np.clip(np.expm1(np.mean([m.predict(X_test) for m in models], axis=0)), 0, 1)
 pd.DataFrame({'Index': test['Index'], 'demand': preds}).to_csv('submission.csv', index=False)
 print("Submission saved.")
