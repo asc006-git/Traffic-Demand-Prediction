@@ -64,9 +64,10 @@ models, scores = [], []
 
 for fold, (tr, va) in enumerate(kf.split(X_train)):
     m = CatBoostRegressor(
-        iterations=1000, learning_rate=0.1, depth=6,
+        iterations=1500, learning_rate=0.07, depth=8, l2_leaf_reg=5,
         cat_features=cat_indices, random_seed=42 + fold,
-        verbose=0, early_stopping_rounds=50, thread_count=-1
+        verbose=0, early_stopping_rounds=80, thread_count=-1, subsample=0.8,
+        min_data_in_leaf=5
     )
     m.fit(X_train.iloc[tr], y[tr], eval_set=(X_train.iloc[va], y[va]), use_best_model=True)
     models.append(m)
