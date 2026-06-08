@@ -4,7 +4,7 @@ import numpy as np
 train = pd.read_csv('dataset/train.csv')
 test = pd.read_csv('dataset/test.csv')
 
-print('=== TRAIN ===')
+print('TRAIN')
 print(f'Shape: {train.shape}')
 print(f'Columns: {list(train.columns)}')
 print(f'Dtypes:')
